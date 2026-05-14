@@ -40,7 +40,7 @@ Functions = ["open", "close", "play", "system", "content", "google search", "you
 
 
 def ShowDefaultChatIfNoChats():
-    with open(r'Data\\ChatLog.json', "r", encoding="utf-8") as File:
+    with open(r'Data\ChatLog.json', "r", encoding="utf-8") as File:
         if len(File.read()) < 5:
             with open(TempDirectoryPath('Database.data'), 'w', encoding="utf-8") as file:
                 file.write("")
@@ -48,7 +48,7 @@ def ShowDefaultChatIfNoChats():
                 file.write(DefaultMessage)
 
 def ReadChatLogJson():
-    with open(r'Data\\ChatLog.json', 'r', encoding="utf-8") as file:
+    with open(r'Data\ChatLog.json', 'r', encoding="utf-8") as file:
         return json.load(file)
 
 def ChatLogIntegration():
@@ -117,12 +117,12 @@ def MainExecution():
                 TaskExecution = True
 
     if ImageExecution:
-        with open(r"Frontend\\Files\\ImageGeneration.data", "w") as file:
+        with open(r"Frontend\Files\ImageGeneration.data", "w") as file:
             file.write(f"{ImageGenerationQuery}, True")
 
         try:
             p1 = subprocess.Popen(
-                ['python', r'Backend\\ImageGeneration.py'],
+                ['python', r'Backend\ImageGeneration.py'],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 stdin=subprocess.PIPE, shell=False
             )

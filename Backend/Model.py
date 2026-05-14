@@ -4,7 +4,7 @@ from dotenv import dotenv_values
 
 env_vars = dotenv_values(".env")
 CohereAPIKey = env_vars.get("CohereAPIKey")
-co = cohere.Client(api_key=CohereAPIKey)
+co = cohere.ClientV2(api_key=CohereAPIKey)
 
 funcs = [
     "exit", "general", "realtime", "open", "close", "play", "generate image", "system", "content", "google search",
@@ -33,42 +33,44 @@ You will decide whether a query is a 'general' query, a 'realtime' query, or is 
 *** Respond with 'general (query)' if you can't decide the kind of query or if a query is asking to perform a task which is not mentioned above. ***
 """
 
+# Convert old chat history format to V2 messages format
 ChatHistory = [
-    {"role": "user", "message": "how are you?"},
-    {"role": "Chatbot", "message": "general how are you?"},
-    {"role": "user", "message": "do you like pizza?"},
-    {"role": "Chatbot", "message": "general do you like pizza?"},
-    {"role": "user", "message": "open chrome and tell me about mahatma gandhi."},
-    {"role": "Chatbot", "message": "opening chrome ,general  telling you about mahatma gandhi."},
-    {"role": "user", "message": "open chrome and firefox"},
-    {"role": "chatbot", "message": "open chrome, open firefox"},
-    {"role": "user","message": "what is today's date and by the way remind me that i have a dancing performance on 5th aug at 11pm"},
-    {"role": "chatbot", "message": "general what is today's date ,reminder 11:00 pm 5th aug dancing performance "},
-    {"role": "user", "message": "chat with me"},
-    {"role": "chatbot", "message": "general chat with me"},
-
+    {"role": "user", "content": "how are you?"},
+    {"role": "assistant", "content": "general how are you?"},
+    {"role": "user", "content": "do you like pizza?"},
+    {"role": "assistant", "content": "general do you like pizza?"},
+    {"role": "user", "content": "open chrome and tell me about mahatma gandhi."},
+    {"role": "assistant", "content": "opening chrome, general telling you about mahatma gandhi."},
+    {"role": "user", "content": "open chrome and firefox"},
+    {"role": "assistant", "content": "open chrome, open firefox"},
+    {"role": "user", "content": "what is today's date and by the way remind me that i have a dancing performance on 5th aug at 11pm"},
+    {"role": "assistant", "content": "general what is today's date, reminder 11:00 pm 5th aug dancing performance"},
+    {"role": "user", "content": "chat with me"},
+    {"role": "assistant", "content": "general chat with me"},
 ]
 
 
 def FirstLayerDMM(prompt: str = "test"):
     messages.append({"role": "user", "content": f"{prompt}"})
 
+    # Build V2 messages: system preamble + chat history examples + user prompt
+    v2_messages = [
+        {"role": "system", "content": preamble}
+    ] + ChatHistory + [
+        {"role": "user", "content": prompt}
+    ]
+
     stream = co.chat_stream(
         model='command-r-plus',
-        message=prompt,
+        messages=v2_messages,
         temperature=0.7,
-        chat_history=ChatHistory,
-        prompt_truncation='OFF',
-        connectors=[],
-        preamble=preamble
-
     )
 
     response = ""
 
     for event in stream:
-        if event.event_type == "text-generation":
-            response += event.text
+        if event.type == "content-delta":
+            response += event.delta.message.content.text
 
     response = response.replace("\n", "")
     response = response.split(",")

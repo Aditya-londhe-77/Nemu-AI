@@ -1,6 +1,5 @@
 from AppOpener import close, open as appopen # type: ignore
 from webbrowser import open as webopen
-from playwright.sync_api import sync_playwright # type: ignore
 from dotenv import dotenv_values
 from bs4 import BeautifulSoup
 from rich import print
@@ -15,6 +14,7 @@ import os
 
 env_vars = dotenv_values(".env")
 GroqAPIKey = env_vars.get("GroqAPIKey")
+Username = env_vars.get("Username", "User")
 
 # Define HTML classes to scrape
 classes = ["Z0cb0rf", "hgKElc", "LTKooSYITrcY", "Z0LCW", "gsrt wb_b FzwWSb YwPhnf", "pclqee", "tw-Data-text tw-text-small tw-ta", 
@@ -28,20 +28,18 @@ client = Groq(api_key=GroqAPIKey)
 
 
 professional_responses = [
-    "Your satisfaction is my top priority; feel free to reach out if there’s anything else I can help you with.",
-    "I’m at your service for any additional questions or support you may need—don’t hesitate to ask."
+    "Your satisfaction is my top priority; feel free to reach out if there's anything else I can help you with.",
+    "I'm at your service for any additional questions or support you may need—don't hesitate to ask."
 ]
 messages = []
-SystemChatBot = [{"role": "system", "content": f"Hello, I am {os.environ['Username']}, You're a content writer. You have to write content like letters, codes, applications, essays, notes, songs, poems etc."}]
+SystemChatBot = [{"role": "system", "content": f"Hello, I am {Username}, You're a content writer. You have to write content like letters, codes, applications, essays, notes, songs, poems etc."}]
 
 
 def GoogleSearch(Topic):
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(f"https://www.google.com/search?q={Topic}")
-        print("[green]Opened Google Search for:[/green]", Topic)
-        browser.close()
+    """Open Google search results in the default browser."""
+    url = f"https://www.google.com/search?q={Topic}"
+    webbrowser.open(url)
+    print(f"[green]Opened Google Search for:[/green] {Topic}")
     return True
 
 
@@ -191,7 +189,6 @@ async def Automation(commands: list[str]):
 if __name__ == "__main__":
     commands = [
        
-        "open paint",
-        "who is amit saha "
+        "play phonk music on youtube "
     ]
     asyncio.run(Automation(commands))
